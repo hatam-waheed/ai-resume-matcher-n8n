@@ -1,0 +1,350 @@
+{
+  "name": "Resume Matcher (Project 03)",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Resume Matcher",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name"
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email"
+            },
+            {
+              "fieldLabel": "Job TItle"
+            },
+            {
+              "fieldLabel": "Job Description"
+            },
+            {
+              "fieldLabel": "Resume/CV",
+              "fieldType": "file"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -1264,
+        -224
+      ],
+      "id": "4822558a-5552-4ba5-81c3-9df4fe36d9e3",
+      "name": "On form submission",
+      "webhookId": "d084ced7-6c6b-41a2-a9c7-f90e1cef7250"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "Resume_CV",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -1040,
+        -224
+      ],
+      "id": "2fdc2754-9817-45a0-a412-e6baa90284a0",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI Resume Matcher.\n\nCompare the candidate's CV with the job description and calculate how well the candidate matches the job.\n\nCandidate Details:\nName: {{ $('On form submission').item.json.Name }}\nJob Title: {{ $('On form submission').item.json['Job TItle'] }}\n\nCV Text: {{ $json.text }}\n\n\nJob Description: {{ $('On form submission').item.json['Job Description'] }}\n\n\nReturn only valid JSON in this format:\n\n{\n  \"candidate_name\": \"\",\n  \"job_title\": \"\",\n  \"match_score\": 0,\n  \"matched_skills\": [],\n  \"missing_skills\": [],\n  \"resume_improvement_suggestions\": [],\n  \"final_summary\": \"\"\n}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -816,
+        -224
+      ],
+      "id": "dcdea9d0-0933-4cdb-8822-1543e75b09bf",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"candidate_name\": \"string\",\n  \"job_title\": \"string\",\n  \"match_score\": \"number\",\n  \"matched_skills\": [\"string\"],\n  \"missing_skills\": [\"string\"],\n  \"resume_improvement_suggestions\": [\"string\"],\n  \"final_summary\": \"string\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -624,
+        -16
+      ],
+      "id": "0802c942-e0c9-422e-8cf1-f230cfd2aa44",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -832,
+        -16
+      ],
+      "id": "102b94a0-3289-4f27-a2f8-60359c0cdad1",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TPNEb8sFhO3ae1In",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1ty3oUt0GAs92Dfozu373ysn9D6tSnm_FTfdnApJlbQE",
+          "mode": "list",
+          "cachedResultName": "Course Projects",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ty3oUt0GAs92Dfozu373ysn9D6tSnm_FTfdnApJlbQE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1055056467,
+          "mode": "list",
+          "cachedResultName": "Resume Matcher 3rd prjct",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ty3oUt0GAs92Dfozu373ysn9D6tSnm_FTfdnApJlbQE/edit#gid=1055056467"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title": "={{ $('AI Agent').item.json.output.job_title }}",
+            "Match Score": "={{ $('AI Agent').item.json.output.match_score }}",
+            "Matched Skills": "={{ $json.matched_skills }}",
+            "Missing Skills": "={{ $json.missing_skills }}",
+            "improvement": "={{ $json.suggestions }}",
+            "Final Summary": "={{ $('AI Agent').item.json.output.final_summary }}"
+          },
+          "matchingColumns": [
+            "Title"
+          ],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Match Score",
+              "displayName": "Match Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Matched Skills",
+              "displayName": "Matched Skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Missing Skills",
+              "displayName": "Missing Skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "improvement",
+              "displayName": "improvement",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Final Summary",
+              "displayName": "Final Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -272,
+        -224
+      ],
+      "id": "f0deebc2-b4db-4138-b0af-8ad8ef1fbb77",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "tXaaZLSpu5uofMkY",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      matched_skills: $json.output.matched_skills.join('\\n'),\n      missing_skills: $json.output.missing_skills.join('\\n'),\n      suggestions: $json.output.resume_improvement_suggestions.join('\\n')\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        -224
+      ],
+      "id": "8815c4cb-fa47-4346-83a5-896b3aedefdc",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {
+    "On form submission": [
+      {
+        "json": {
+          "Name": "Hatam Waheed",
+          "Email": "hatamwaheed123@gmail.com",
+          "Job TItle": "AI Automation Intern",
+          "Job Description": "About the Role •\tEditVista LTD is hiring Agentic AI Interns to support our AI automation and workflow development team. •\tThis role is for candidates who are interested in AI agents, automation systems, CRM workflows, AI chatbots, voice agents, API integrations, and business process automation. •\tThe selected interns will work with our team on real automation projects, helping with research, workflow building, testing, documentation, and implementation support across different client and internal systems. Key Responsibilities •\tAssist in building and testing AI automation workflows. •\tSupport the team with AI agent, chatbot, and voice agent projects. •\tHelp create workflows using tools such as n8n, Make, Zapier, GoHighLevel, and similar platforms. •\tAssist with API based integrations between CRMs, forms, calendars, databases, and third party tools. •\tTest automations, check errors, and document issues clearly. •\tResearch AI tools, automation platforms, and possible implementation methods. •\tSupport prompt writing, workflow logic, conditional flows, and data mapping. •\tHelp prepare internal documentation, SOPs, and testing checklists. •\tCoordinate with CRM, development, and project management teams where required. •\tMaintain proper records of workflows, test results, and implementation notes. Requirements •\tBasic understanding of AI tools, automation, APIs, or software workflows. •\tGood English reading and writing skills. •\tStrong logical thinking and problem solving ability. •\tComfortable learning new tools and technical systems. •\tBasic knowledge of Google Sheets, web apps, CRMs, or automation tools. Preferred Skills •\tBasic knowledge of n8n, Make, Zapier, GoHighLevel, APIs, webhooks, or AI tools is a plus. •\tUnderstanding of ChatGPT, AI agents, prompt engineering, chatbots, or voice AI is helpful. •\tBasic programming knowledge in JavaScript, Python, or any relevant language is a plus. •\tInterest in AI automation, CRM systems, workflow development, and technical problem solving",
+          "Resume/CV": [
+            {
+              "filename": "CV (1).pdf",
+              "mimetype": "application/pdf",
+              "size": 62788
+            }
+          ],
+          "submittedAt": "2026-05-25T23:56:24.841-04:00",
+          "formMode": "test"
+        },
+        "binary": {
+          "Resume_CV": {
+            "mimeType": "application/pdf",
+            "fileType": "pdf",
+            "fileExtension": "pdf",
+            "data": "filesystem-v2",
+            "fileName": "CV (1).pdf",
+            "id": "filesystem-v2:workflows/epnkrA0J9fLVUa2q/executions/temp/binary_data/4bada4e4-6886-406c-a011-9cfb2cc7efd1",
+            "fileSize": "62.8 kB",
+            "bytes": 62788
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "aa56588b-ba3e-4d05-af7f-b95f641ac23a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fe722380a1c13008728e66f831d8103d62a78824a8b9c557cf68a7a6d242c859"
+  },
+  "id": "epnkrA0J9fLVUa2q",
+  "tags": []
+}
